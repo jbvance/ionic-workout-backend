@@ -6,7 +6,7 @@ type SucessMessage {
 
 type Mutation {
   createExercise(title: String, description: String, image: String): Exercise!
-  updateExercise(id: ID!, title: String, description: String: Exercise!
+  updateExercise(id: ID!, title: String, description: String): Exercise!
   deleteExercise(id: ID!): Exercise
   signup(email: String!, password: String!, name: String!): User!
   signin(email: String!, password: String!): User

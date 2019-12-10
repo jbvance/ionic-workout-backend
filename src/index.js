@@ -6,10 +6,12 @@ const db = require('./db');
 
 const server = createServer();
 
+// TODO: LOCKDOWN PRISMA SERVER TO PREVENT ACCESS OUTSIDE APP
+
 server.express.use(cookieParser());
 // decode JWT so we can get user id on each request
 server.use((req, res, next) => {
-  const { token } = req.cookies;
+  const { token } = req.cookies;  
   if (token) {
     const { userId } = jwt.verify(token, process.env.APP_SECRET);
     req.userId = userId;
