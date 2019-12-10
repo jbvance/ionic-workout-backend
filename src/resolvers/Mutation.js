@@ -7,10 +7,10 @@ const { hasPermission } = require('../utils');
 const stripe = require('../stripe');
 
 const Mutations = {
-  async createItem(parent, args, ctx, info) {
+  async createExercise(parent, args, ctx, info) {
     if (!ctx.request.userId)
-      throw new Error('You must be logged in to create an item');
-    const item = await ctx.db.mutation.createItem(
+      throw new Error('You must be logged in to create an exercise');
+    const exercise = await ctx.db.mutation.createExercise(
       {
         data: {
           // Create a relationship between item and user
@@ -25,14 +25,14 @@ const Mutations = {
       info
     );
 
-    return item;
+    return exercise;
   },
-  updateItem(parent, args, ctx, info) {
+  updateExercise(parent, args, ctx, info) {
     // first take a copy of the updated
     const updates = { ...args };
     // remove ID from updates because you can't update it
     delete updates.id;
-    return ctx.db.mutation.updateItem(
+    return ctx.db.mutation.updateExercise(
       {
         data: updates,
         where: { id: args.id }
@@ -41,17 +41,17 @@ const Mutations = {
     );
   },
 
-  async deleteItem(parent, args, ctx, info) {
+  async deleteExercise(parent, args, ctx, info) {
     const where = { id: args.id };
-    const item = await ctx.db.query.item({ where }, `{ id title user { id } }`);
+    const exercise = await ctx.db.query.exercise({ where }, `{ id title user { id } }`);
     const ownsItem = item.user.id === ctx.request.userId;
     const hasPermissions = ctx.request.user.permissions.some(permission =>
       ['ADMIN', 'ITEMDELETE'].includes(permission)
     );
-    if (!ownsItem && !hasPermissions) {
+    if (!ownsItem || !hasPermissions) {
       throw new Error("You don't have permission to delete this item");
     }
-    return ctx.db.mutation.deleteItem({ where }, info);
+    return ctx.db.mutation.deleteExercise({ where }, info);
   },
 
   async signup(parent, args, ctx, info) {
@@ -163,77 +163,7 @@ const Mutations = {
       },
       info
     );
-  },
-
-  async addToCart(parent, args, ctx, info) { 
-    const { userId } = ctx.request;
-    if (!userId) throw new Error('You must be logged in!');
-    const [existingCartItem] = await ctx.db.query.cartItems({
-      where: {
-        user: { id: userId },
-        item: { id: args.id }
-      }
-    });
-    if(existingCartItem) {
-      //console.log('This item is already in their cart');
-      return ctx.db.mutation.updateCartItem({
-        where: { id: existingCartItem.id},
-          data: { quantity: existingCartItem.quantity + 1 }
-      }, info);
-    }
-    return ctx.db.mutation.createCartItem({
-      data: {
-        user: {
-          connect: { id: userId}
-        },
-        item: {
-          connect: { id: args.id }
-        }
-      }
-    }, info);
-  },
-  
-  async removeFromCart(parent, args, ctx, info) {    
-    const cartItem = await ctx.db.query.cartItem({      
-      where: { id: args.id }
-    }, `{ id, user { id }}`);
-    if(!cartItem) throw new Error('No Cart Item Foound');
-    if(cartItem.user.id !== ctx.request.userId) throw new Error('Item does not belong to logged in user');
-    return ctx.db.mutation.deleteCartItem({ where: { id: args.id }}, info);
-  },
-
-  async createOrder(parent, args, ctx, info) {
-    const { userId } = ctx.request;
-    if(!userId) throw new Error('You  must be signed in to complete this order');
-    const user = await ctx.db.query.user({
-      where: {
-        id: userId
-      }
-    }, `{ id 
-          name 
-          email 
-          cart {  
-              id 
-              quantity 
-              item { title price id description image }
-          }
-        }`)
-
-    //recalcuate total price (in case user tried to change it on the client)   
-    const amount = user.cart.reduce((tally, cartItem) =>  {      
-      return tally + cartItem.item.price * cartItem.quantity;
-    }, 0);
-
-    //Create the Stripe Charge (turn token into money)
-    const charge = await stripe.charges.create({
-      amount,
-      currency: 'USD',
-      source: args.token
-    });
-
-    //console.log(`Going to charge for a total of ${amount}`);
-
-  }
+  },  
 };
 
 module.exports = Mutations;
