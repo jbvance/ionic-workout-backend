@@ -12,6 +12,7 @@ const Query = {
   exercise: forwardTo('db'),
   
   workouts: forwardTo('db'),
+  workout: forwardTo('db'),
   
 
   me(parent, args, ctx, info) {

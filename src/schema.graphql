@@ -19,7 +19,8 @@ type Mutation {
 type Query {
  exercises(where: ExerciseWhereInput, orderBy: ExerciseOrderByInput, skip: Int, first: Int): [Exercise]!
  exercise(where: ExerciseWhereUniqueInput!): Exercise 
- workouts: [Workout!]!
+ workouts(where: WorkoutWhereInput, oderBy: WorkoutOrderByInput, skip: Int, first: Int): [Workout!]!
+ workout(where: WorkoutWhereUniqueInput): Workout
  me: User
  users: [User]!
 }
