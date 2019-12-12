@@ -19,6 +19,7 @@ type Mutation {
 type Query {
  exercises(where: ExerciseWhereInput, orderBy: ExerciseOrderByInput, skip: Int, first: Int): [Exercise]!
  exercise(where: ExerciseWhereUniqueInput!): Exercise 
+ workouts: [Workout!]!
  me: User
  users: [User]!
 }

@@ -7,7 +7,7 @@ const db = require('./db');
 const server = createServer();
 
 // TODO: LOCKDOWN PRISMA SERVER TO PREVENT ACCESS OUTSIDE APP
-
+console.log("PRISMA", process.env.PRISMA_ENDPOINT);
 server.express.use(cookieParser());
 // decode JWT so we can get user id on each request
 server.use((req, res, next) => {
